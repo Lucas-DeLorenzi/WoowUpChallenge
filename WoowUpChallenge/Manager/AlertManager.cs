@@ -23,55 +23,97 @@ namespace WoowUpChallenge
         #region private
         private Topic? CheckTopicExist(string topicName)
         {
-            return _topics.FirstOrDefault(topic => topic.TopicName == topicName);
+            try
+            {
+                return _topics.FirstOrDefault(topic => topic.TopicName == topicName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private User? CheckUserExist(string? userName)
         {
-            return _users.FirstOrDefault(user => user.Name == userName);
+            try
+            {
+                return _users.FirstOrDefault(user => user.Name == userName);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private void SendAlert(Alert alert)
         {
-            if (alert.IsUrgent)
+            try
             {
-                SendUrgentAlert(alert);
-            }
-            else
-            {
-                if (alert.User != null)
+                if (alert.IsUrgent)
                 {
-                    SendExclusiveUserAlert(alert);
+                    SendUrgentAlert(alert);
                 }
                 else
                 {
-                    SendInformativeAlert(alert);
+                    if (alert.User != null)
+                    {
+                        SendExclusiveUserAlert(alert);
+                    }
+                    else
+                    {
+                        SendInformativeAlert(alert);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
         private void SendUrgentAlert(Alert alert)
         {
-            foreach (var user in _users)
+            try
             {
-                user.ReceiveAlert(new UserAlert(alert));
+                foreach (var user in _users)
+                {
+                    user.ReceiveAlert(new UserAlert(alert));
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
         private void SendExclusiveUserAlert(Alert alert)
         {
-            var user = _users.First(user => user == alert.User);
-            user.ReceiveAlert(new UserAlert(alert));
+            try
+            {
+                var user = _users.First(user => user == alert.User);
+                user.ReceiveAlert(new UserAlert(alert));
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private void SendInformativeAlert(Alert alert)
         {
-            foreach (var user in _users)
+            try
             {
-                if (user.TopicPreferences.Any(topic => topic.TopicName == alert.TopicName))
+                foreach (var user in _users)
                 {
-                    user.ReceiveAlert(new UserAlert(alert));
+                    if (user.TopicPreferences.Any(topic => topic.TopicName == alert.TopicName))
+                    {
+                        user.ReceiveAlert(new UserAlert(alert));
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
         #endregion
@@ -82,15 +124,9 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (CheckUserExist(userName) == null)
-                {
-                    _users.Add(ContentCreator.CreateNewUser(userName));
-                }
-                else
-                {
-                    throw new Exception($"Already exists user with the given user name: {userName}");
-                }
+                if (CheckUserExist(userName) != null) throw new Exception($"A user already exists with the given user name: {userName}");
 
+                _users.Add(ContentCreator.CreateNewUser(userName));
             }
             catch (Exception ex)
             {
@@ -102,15 +138,9 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (CheckTopicExist(topicName) == null)
-                {
-                    _topics.Add(ContentCreator.CreateNewTopic(topicName));
-                }
-                else
-                {
-                    throw new Exception($"Already exists topic with the given topic name: {topicName}");
-                }
+                if (CheckTopicExist(topicName) != null) throw new Exception($"A topic already exists with the given topic name: {topicName}");
 
+                _topics.Add(ContentCreator.CreateNewTopic(topicName));
             }
             catch (Exception ex)
             {
@@ -124,22 +154,13 @@ namespace WoowUpChallenge
             {
                 var userSelected = CheckUserExist(userName);
                 var topicSelected = CheckTopicExist(topicName);
-                if (userSelected != null)
-                {
-                    if (topicSelected != null)
-                    {
-                        userSelected.SubscribeToTopic(topicSelected);
-                        topicSelected.UsersSubscribed.Add(userSelected);
-                    }
-                    else
-                    {
-                        throw new Exception($"Topic with the given topic name: {topicName} not found");
-                    }
-                }
-                else
-                {
-                    throw new Exception($"User with the given user name: {userName} not found");
-                }
+
+                if (userSelected == null) throw new Exception($"User with the given user name: {userName} not found");
+                if (topicSelected == null) throw new Exception($"Topic with the given topic name: {topicName} not found");
+
+                userSelected.SubscribeToTopic(topicSelected);
+                topicSelected.UsersSubscribed.Add(userSelected);
+
             }
             catch (Exception ex)
             {
@@ -151,17 +172,11 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (CheckTopicExist(topicName) != null)
-                {
-                    var newInformativeAlert = ContentCreator.CreateInformativeAlert(alertName, topicName, description, expiresAt);
-                    _alerts.Add(newInformativeAlert);
-                    SendAlert(newInformativeAlert);
-                }
-                else
-                {
-                    throw new Exception($"Topic with the given topic name: {topicName} not found");
-                }
+                if (CheckTopicExist(topicName) == null) throw new Exception($"Topic with the given topic name: {topicName} not found");
 
+                var newInformativeAlert = ContentCreator.CreateInformativeAlert(alertName, topicName, description, expiresAt);
+                _alerts.Add(newInformativeAlert);
+                SendAlert(newInformativeAlert);
             }
             catch (Exception ex)
             {
@@ -175,25 +190,13 @@ namespace WoowUpChallenge
             {
                 var topic = CheckTopicExist(topicName);
                 var user = CheckUserExist(userName);
-                if (topic != null)
-                {
-                    if (user != null)
-                    {
-                        var newExlusiveUserAlert = ContentCreator.CreateInformativeAlert(alertName, topicName, description, expiresAt, user);
-                        _alerts.Add(newExlusiveUserAlert);
-                        SendAlert(newExlusiveUserAlert);
-                    }
-                    else
-                    {
-                        throw new Exception($"User with the given user name: {userName} not found");
-                    }
 
-                }
-                else
-                {
-                    throw new Exception($"Topic with the given topic name: {topicName} not found");
-                }
+                if (topic == null) throw new Exception($"Topic with the given topic name: {topicName} not found");
+                if (user == null) throw new Exception($"User with the given user name: {userName} not found");
 
+                var newExlusiveUserAlert = ContentCreator.CreateInformativeAlert(alertName, topicName, description, expiresAt, user);
+                _alerts.Add(newExlusiveUserAlert);
+                SendAlert(newExlusiveUserAlert);
             }
             catch (Exception ex)
             {
@@ -205,16 +208,11 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (CheckTopicExist(topicName) != null)
-                {
-                    var newUrgentAlert = ContentCreator.CreateUrgentAlert(alertName, topicName, description, expiresAt);
-                    _alerts.Add(newUrgentAlert);
-                    SendAlert(newUrgentAlert);
-                }
-                else
-                {
-                    throw new Exception($"Topic with the given topic name: {topicName} not found");
-                }
+                if (CheckTopicExist(topicName) == null) throw new Exception($"Topic with the given topic name: {topicName} not found");
+
+                var newUrgentAlert = ContentCreator.CreateUrgentAlert(alertName, topicName, description, expiresAt);
+                _alerts.Add(newUrgentAlert);
+                SendAlert(newUrgentAlert);
 
             }
             catch (Exception ex)
@@ -227,7 +225,8 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (user == null) throw new Exception("User is not exist");
+                if (user == null) throw new Exception("The user does not exist");
+
                 Alert alert = _alerts.First(alert => alert.AlertName == alertName);
                 alert.AlreadyReadBy.Add(user);
             }
@@ -242,17 +241,12 @@ namespace WoowUpChallenge
             try
             {
                 var userSelected = CheckUserExist(userName);
-                if (userSelected != null)
-                {
-                    List<UserAlert> unreadAndUnexpiredUserAlerts = new List<UserAlert>();
-                    unreadAndUnexpiredUserAlerts.AddRange(userSelected.Alerts.Where(alert => !alert.IsRead && (alert.ExpiresAt > DateTime.Now || alert.ExpiresAt == null)));
-                    return unreadAndUnexpiredUserAlerts.OrderByDescending(alert => alert.CreatedAt).ToList();
-                }
-                else
-                {
-                    throw new Exception($"User with the given user name: {userName} not found");
-                }
 
+                if (userSelected == null) throw new Exception($"User with the given user name: {userName} not found");
+
+                List<UserAlert> unreadAndUnexpiredUserAlerts = new List<UserAlert>();
+                unreadAndUnexpiredUserAlerts.AddRange(userSelected.Alerts.Where(alert => !alert.IsRead && (alert.ExpiresAt > DateTime.Now || alert.ExpiresAt == null)));
+                return unreadAndUnexpiredUserAlerts.OrderByDescending(alert => alert.CreatedAt).ToList();
             }
             catch (Exception ex)
             {
@@ -284,28 +278,30 @@ namespace WoowUpChallenge
 
         }
 
-        //public List<AlertsQuery> GetSortedAndUnexpiredExclusiveUserAlerts(User user)
-        //{
-        //    try
-        //    {
-        //        List<AlertsQuery> unexpiredSingleUserAlerts = new List<AlertsQuery>();
-        //        foreach (var topic in _topics)
-        //        {
-        //            var topicQuery = new AlertsQuery();
+        // I added this method to obtain a list of unexpired exclusive user alert sorted alphabetically and also sorted by topic
+        // That is the reason for the AlertsQuery class
+        public List<AlertsQuery> GetSortedAndUnexpiredExclusiveUserAlerts(User user)
+        {
+            try
+            {
+                List<AlertsQuery> unexpiredSingleUserAlerts = new List<AlertsQuery>();
+                foreach (var topic in _topics)
+                {
+                    var topicQuery = new AlertsQuery();
 
-        //            topicQuery.Topic = topic;
-        //            topicQuery.SortedAlertList.AddRange(_alerts.Where(alert => alert.User == user && (alert.ExpiresAt > DateTime.Now || alert.ExpiresAt == null)));
-        //            topicQuery.SortedAlertList.OrderByDescending(alert => alert.CreatedAt).ToList();
-        //            unexpiredSingleUserAlerts.Add(topicQuery);
-        //        }
-        //        return unexpiredSingleUserAlerts;
+                    topicQuery.Topic = topic;
+                    topicQuery.SortedAlertList.AddRange(_alerts.Where(alert => alert.User == user && (alert.ExpiresAt > DateTime.Now || alert.ExpiresAt == null)));
+                    topicQuery.SortedAlertList.OrderByDescending(alert => alert.CreatedAt).ToList();
+                    unexpiredSingleUserAlerts.Add(topicQuery);
+                }
+                return unexpiredSingleUserAlerts;
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-        //}
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         #endregion
     }
 

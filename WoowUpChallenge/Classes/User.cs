@@ -23,14 +23,9 @@ namespace WoowUpChallenge
         {
             try
             {
-                if (topic.UsersSubscribed.Contains(this))
-                {
-                    throw new Exception($"User {this.Name} is already subscribed to topic {topic.TopicName}");
-                }
-                else
-                {
-                    TopicPreferences.Add(topic);
-                }
+                if (topic.UsersSubscribed.Contains(this)) throw new Exception($"User {this.Name} is already subscribed to topic {topic.TopicName}");
+
+                TopicPreferences.Add(topic);
             }
             catch (Exception ex)
             {
@@ -39,24 +34,11 @@ namespace WoowUpChallenge
 
         }
 
-        //public void Unsubscribe(Topic topic)
-        //{
-        //    //Check if user already exist -> throw error / do nothing
-        //    if (topic.UsersSubscribed.Contains(this))
-        //    {
-        //        TopicPreferences.Remove(topic);
-        //    }
-        //    else
-        //    {
-        //        throw new Exception($"User {this.Name} is not subscribed to topic {topic.TopicName}");
-        //    }
-        //}                                
-
         public void ReceiveAlert(UserAlert alert)
         {
             try
             {
-                if (alert == null) throw new Exception("Alert is not exist");
+                if (alert == null) throw new Exception("Alert does not exist");
                 Alerts.Add(alert);
             }
             catch (Exception ex)
@@ -75,16 +57,11 @@ namespace WoowUpChallenge
             try
             {
                 var alert = _alerts.FirstOrDefault(alert => alert.AlertName == alertName);
-                if (alert != null)
-                {
-                    alert.IsRead = true;
-                    manager.ReceiveUserReadNotice(this, alertName);
-                }
-                else
-                {
-                    throw new Exception($"Alert with the given alert name: {alertName} not found");
-                }
 
+                if (alert == null) throw new Exception($"Alert with the given alert name: {alertName} not found");
+
+                alert.IsRead = true;
+                manager.ReceiveUserReadNotice(this, alertName);
             }
             catch (Exception ex)
             {
