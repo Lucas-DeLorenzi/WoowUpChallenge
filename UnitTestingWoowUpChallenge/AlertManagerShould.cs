@@ -18,6 +18,16 @@ namespace UnitTestingWoowUpChallenge
         }
 
         [Fact]
+        public void ThrowExceptionWhenUserAlreadyExists()
+        {
+            var systemManager = new AlertManager();
+
+            systemManager.NewUser("Lucas");
+
+            Assert.Throws<Exception>(() => systemManager.NewUser("Lucas"));
+        }
+
+        [Fact]
         public void SubscribeNewTopic()
         {
 
@@ -30,6 +40,16 @@ namespace UnitTestingWoowUpChallenge
         }
 
         [Fact]
+        public void ThrowExceptionWhenTopicAlreadyExists()
+        {
+            var systemManager = new AlertManager();
+
+            systemManager.NewTopic("Topic 1");
+
+            Assert.Throws<Exception>(() => systemManager.NewTopic("Topic 1"));
+        }
+
+        [Fact]
         public void AllowUserToSubscribeToTopic()
         {
             var systemManager = new AlertManager();
@@ -39,6 +59,19 @@ namespace UnitTestingWoowUpChallenge
             systemManager.SubscribeUserToTopic("Lucas", "Topic 1");
 
             Assert.True(systemManager.Topics.Any(topic => topic.TopicName == "Topic 1" && topic.UsersSubscribed.Any(user => user.Name == "Lucas")));
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenUserOrTopicDoesNotExist()
+        {
+            var systemManager = new AlertManager();
+            systemManager.NewTopic("Topic 1");
+            systemManager.NewUser("Lucas");
+
+            systemManager.SubscribeUserToTopic("Lucas", "Topic 1");
+
+            Assert.Throws<Exception>(() => systemManager.SubscribeUserToTopic("Marcos", "Topic 1"));
+            Assert.Throws<Exception>(() => systemManager.SubscribeUserToTopic("Lucas", "Topic 2"));
         }
 
         [Fact]
@@ -93,6 +126,19 @@ namespace UnitTestingWoowUpChallenge
         }
 
         [Fact]
+        public void ThrowExceptionWhenCreatingNewAlertIfGivenTopicOrUserDoesNotExist()
+        {
+            var systemManager = new AlertManager();
+            systemManager.NewTopic("Topic 1");
+            systemManager.NewUser("Lucas");
+            systemManager.SubscribeUserToTopic("Lucas", "Topic 1");
+
+            Assert.Throws<Exception>(() => systemManager.NewInformativeAlert("Alert 1", "Topic 3", "This is an informative alert for the Topic 1"));
+            Assert.Throws<Exception>(() => systemManager.NewExclusiveUserAlert("Alert 1", "Topic 1", "This is an informative alert for the Topic 1", "Marcos"));
+            Assert.Throws<Exception>(() => systemManager.NewUrgentAlert("Alert 1", "Topic 4", "This is an informative alert for the Topic 1"));
+        }
+
+        [Fact]
         public void ReceiveUserReadNotice()
         {
             var systemManager = new AlertManager();
@@ -105,6 +151,19 @@ namespace UnitTestingWoowUpChallenge
             systemManager.ReceiveUserReadNotice(user, "Alert 1");
 
             Assert.True(systemManager.Alerts.Any(alert => alert.AlertName == "Alert 1" && alert.AlreadyReadBy.Any(reader => reader.Name == "Lucas")));
+        }
+
+        [Fact]
+        public void ThrowExceptionWhenTryingToReceiveAReadNoticeFromNonExistingUser()
+        {
+            var systemManager = new AlertManager();
+            systemManager.NewTopic("Topic 1");
+            systemManager.NewUser("Lucas");
+            systemManager.SubscribeUserToTopic("Lucas", "Topic 1");
+            systemManager.NewInformativeAlert("Alert 1", "Topic 1", "This is an informative alert for the Topic 1");
+            User? user = null;
+
+            Assert.Throws<Exception>(() => systemManager.ReceiveUserReadNotice(user, "Alert 1"));
         }
 
         [Fact]
