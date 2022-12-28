@@ -278,7 +278,7 @@ namespace WoowUpChallenge
 
         }
 
-        // I added this method to obtain a list of unexpired exclusive user alert sorted alphabetically and also sorted by topic
+        // Added this method to get a list of unexpired exclusive user alert sorted alphabetically and also sorted by topic
         // That is the reason for the AlertsQuery class
         public List<AlertsQuery> GetSortedAndUnexpiredExclusiveUserAlerts(User user)
         {
