@@ -1,42 +1,95 @@
 ﻿
 namespace WoowUpChallenge
 {
-    public class User : ISubscriber
+    public class User
     {
-        public string Name { get; set; }
+        private string _name { get; set; }
+        private List<UserAlert> _alerts { get; set; }
+        private List<Topic> _topicPreferences { get; set; }
+
+        public string Name { get { return _name; } }
+        public List<UserAlert> Alerts { get { return _alerts; } }
+        public List<Topic> TopicPreferences { get { return _topicPreferences; } }
+
+
         public User(string name)
         {
-            Name = name;
+            _name = name;
+            _alerts = new List<UserAlert>();
+            _topicPreferences = new List<Topic>();
         }
 
-        public ISubscriber? Update(IPublisher publisher)
+        public void SubscribeToTopic(Topic topic)
         {
-            if (!publisher.TriggeredAlert.AlreadyReadBy.Contains(this))
+            try
             {
-                Console.WriteLine($"The user {this.Name} has received an alert: {publisher.TriggeredAlert.Description}");
-                return this;
+                if (topic.UsersSubscribed.Contains(this))
+                {
+                    throw new Exception($"User {this.Name} is already subscribed to topic {topic.TopicName}");
+                }
+                else
+                {
+                    TopicPreferences.Add(topic);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return null;
+                throw ex;
+            }
+
+        }
+
+        //public void Unsubscribe(Topic topic)
+        //{
+        //    //Check if user already exist -> throw error / do nothing
+        //    if (topic.UsersSubscribed.Contains(this))
+        //    {
+        //        TopicPreferences.Remove(topic);
+        //    }
+        //    else
+        //    {
+        //        throw new Exception($"User {this.Name} is not subscribed to topic {topic.TopicName}");
+        //    }
+        //}                                
+
+        public void ReceiveAlert(UserAlert alert)
+        {
+            try
+            {
+                if (alert == null) throw new Exception("Alert is not exist");
+                Alerts.Add(alert);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
 
-        public void SubscribeToATopic(AlertSystemManager publisher, string topicName)
+        public void SeeAlerts()
         {
-            publisher.Subscribe(this, topicName);
+            Console.WriteLine($"You have {Alerts.Count} alerts. There are: {String.Join(", ", Alerts.Select(x => x.AlertName))}");
         }
 
-        public void MarkAlertAsRead(IPublisher publisher, string alertName)
+        public void MarkAlertAsRead(string alertName, IManager manager)
         {
-            if (publisher.MarkAlertAsRead(alertName, this))
+            try
             {
-                Console.WriteLine($"User {this.Name} has marked the alert: {alertName} as read");
+                var alert = _alerts.FirstOrDefault(alert => alert.AlertName == alertName);
+                if (alert != null)
+                {
+                    alert.IsRead = true;
+                    manager.ReceiveUserReadNotice(this, alertName);
+                }
+                else
+                {
+                    throw new Exception($"Alert with the given alert name: {alertName} not found");
+                }
+
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception($"No alert found with the given alert name: {alertName}");
-            };
+                throw ex;
+            }
         }
     }
 }

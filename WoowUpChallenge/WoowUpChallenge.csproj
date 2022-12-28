@@ -7,4 +7,19 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Classes\Alert\AlertBase.cs" />
+    <Compile Remove="Classes\UrgentAlert.cs" />
+    <Compile Remove="Manager\AlertCreator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Classes\Alert" />
+    <None Remove="Classes\Alert\AlertBase" />
+    <None Remove="Classes\Alert\NewFile1.txt" />
+    <None Remove="Classes\Alert\TopicAlert" />
+    <None Remove="Manager\AlertCreator" />
+    <None Remove="Manager\NewFile1.txt" />
+  </ItemGroup>
+
 </Project>
